@@ -11,6 +11,7 @@ edition = "2018"
 [dependencies]
 rust-crypto = "*"
 mysql = "*"
+serde_json = "1.0"
 structopt = { version = "0.3", features = [ "paw" ] }
 paw = "1.0"
 

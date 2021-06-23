@@ -3,8 +3,11 @@ use crypto::sha3::Sha3;
 use mysql::*;
 use mysql::prelude::*;
 use rocksdb;
+use serde_json;
 use std::fs;
 use structopt::StructOpt;
+
+use std::collections::HashMap;
 
 #[derive(StructOpt)]
 struct Cli {
@@ -40,7 +43,7 @@ fn get_posts(user: String, password: String, host: String, port: u32, db_name: S
     let pool = Pool::new(url)?;
     let mut conn = pool.get_conn()?;
 
-    let mut posts = Vec::<Post>::new();
+    let mut posts = Vec::new();
 
     for table_name in table_names.iter() {
         conn.query_map(
@@ -108,8 +111,14 @@ fn main() {
         //hasher.input_str(&p.content);
         //hasher.result(hash);
         //hasher.reset();
+        //
 
-        db.put(&p.date.timestamp().to_le_bytes(), &p.content).expect("could not write post entry");
+        let mut value = HashMap::new();
+        value.insert("content", &p.content);
+        value.insert("title", &p.title);
+        value.insert("timestamp", &p.date_str);
+
+        db.put(&p.date.timestamp().to_be_bytes(), serde_json::to_string(&value).unwrap()).expect("could not write post entry");
     }
 
     let x: Option<&[u8]> = None;
